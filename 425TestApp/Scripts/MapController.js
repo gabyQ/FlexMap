@@ -1,25 +1,28 @@
 ﻿var lastKeyPress = "left";
 // The initial latlng of the route
-var origin = { lat: 37.869085, lng: -122.254775 };
+var origin;
+var destination;
 // The initial map in explore mode
 var map;
 // The panorama at the current location
 var panorama;
 // An array of markers on the map
 var markers = [];
-// The geocoder to translate addresses into latlng
-var geocoder = new google.maps.Geocoder();
+// Explore view or route view
+var mode = "explore";
 
 $(document).ready(function () {
     
 });
 
 // Initializes the driving route
-function initRoute(rotueData) {
+function initRoute() {
+    mode = "route";
+    toggleMode();
     var directionsService = new google.maps.DirectionsService();
     var directionsRoute = directionsService.route({
-        destination: routeData[0],
-        origin: new google.maps.LatLng(33.9063, -116.56344000000001),
+        destination: destination,
+        origin: origin,
         travelMode: google.maps.TravelMode.DRIVING
     }, function (DirectionsResult, DirectionsStatus) {
         var routeSequence = StreetviewSequence('#routeMap', {
@@ -76,6 +79,19 @@ function initRoute(rotueData) {
     });
 }
 
+// Shows the appropriate maps based on mode
+function toggleMode() {
+    if (mode == "explore") {
+        $("#map").show();
+        $("#panorama").show();
+    }
+    else {
+        $("body").off("keypress");
+        $("#map").hide();
+        $("#panorama").hide();
+    }
+}
+
 // Initialize the map for explore view
 function initMap() {
     var berkeley = { lat: 37.869085, lng: -122.254775 };
@@ -106,37 +122,55 @@ function initMap() {
 function initKeyListeners() {
     $("body").keyup(function (e) {
         // Listen for the spacebar or the bend gesture to toggle entering route data
-        if ((e.keyCode || e.which) == 32) {
+        if ((e.keyCode || e.which) == 38) {
             $("#routeInputContainer").toggle();
         }
         // Listen for enter key to submit origin and destination
-        if ((e.keyCode || e.which) == 32) {
+        if ((e.keyCode || e.which) == 13) {
             // Only submit if the route input container is visible
             if (!($("#routeInputContainer").attr("display") == "none")) {
-                var routeData = getRouteParams();
-                console.log(routeData);
-                //initRoute(routeData);
+                origin = null;
+                destination = null;
+                geocodeAddress($.trim($("#fromInfo").val()), "origin"),
+                geocodeAddress($.trim($("#toInfo").val()), "destination");
             }
         }
     });
 }
 
-function getRouteParams() {
-    var originName = $("#fromInfo").value();
-    var destinationName = $("#toInfo").value();
-    
-    var originCode = geoCodeAddress($(originName).trim());
-    console.log(originCode);
-    var origin = new google.maps.LatLng(33.8974391098385, -116.6136966801696);
-    return [originCode, destinationCode];
+// Sets the origin and destination. If one of them are null, the other will initialize the route.
+function setRouteParams(r, type) {
+    if (type == "origin") {
+        origin = r;
+        if (!(destination == null)) {
+            if ($("#routeMap canvas")) {
+                $("#routeMap canvas").remove();
+            }
+            initRoute();
+        }
+        console.log(origin);
+    }
+    if (type == "destination") {
+        destination = r;
+        if (!(origin == null)) {
+            if ($("#routeMap canvas")) {
+                $("#routeMap canvas").remove();
+            }
+            initRoute();
+        }
+        console.log(destination);
+    }
 }
 
-function geocodeAddress(address) {
+function geocodeAddress(address, type) {
+    var geocoder = new google.maps.Geocoder();
     geocoder.geocode({ 'address': address }, function (results, status) {
         if (status === google.maps.GeocoderStatus.OK) {
-            resultsMap.setCenter(results[0].geometry.location);
-            console.log(results);
-            return results;
+            if (results[0]) {
+                setRouteParams(results[0].geometry.location, type);
+                return results[0].geometry.location;
+            }
+            // TODO: show no results found
         } else {
             console.log('Geocode was not successful for the following reason: ' + status);
         }
