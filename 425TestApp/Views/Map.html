@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>CISC 425 Project</title>
+	<meta charset="utf-8" />
+    <script src="/Scripts/jquery-2.2.1.min.js"></script>
+    <script src="/Scripts/underscore.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/1.18.0/TweenMax.min.js"></script>
+    <script src="/Scripts/StreetviewSequence.js"></script>
+    <script src="/Scripts/MapController.js"></script>
+    <link rel="stylesheet" type="text/css" href="../Styles/FlexMap.css">
+</head>
+<body>
+    <div id="routeInputContainer">
+        <form>
+            <ul>
+                <li><input id="fromInfo" name="search" type="text" placeholder="  from" required></li>
+                <li><input id="toInfo" name="search" type="text" placeholder="  to" required></li>
+            </ul>
+        </form>
+    </div>
+    <div id="map"></div>
+    <div id="floatingMapOverlay"></div>
+    <div id="routeMap"></div>
+    <div id="panorama"></div>
+    
+</body>
+</html>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBaTYevhHwHQewpC-trmY28KO01yIbwPcI&callback=initMap"></script>
